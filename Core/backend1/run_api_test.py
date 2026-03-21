@@ -20,6 +20,18 @@ def main():
 
     client = TestClient(app)
 
+    root_response = client.get("/")
+    print(
+        "frontend_root",
+        root_response.status_code,
+        root_response.headers.get("content-type"),
+    )
+    if (
+        root_response.status_code >= 400
+        or "SciMath Adaptive Coach" not in root_response.text
+    ):
+        raise SystemExit(1)
+
     require_ok(client.get("/health"), "health")
 
     user = require_ok(

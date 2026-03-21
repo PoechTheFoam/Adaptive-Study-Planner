@@ -20,6 +20,12 @@ load_dotenv(BASE_DIR / ".env")
 # ============================================================================
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+DATABASE_PATH = os.getenv(
+    "DATABASE_PATH", str(BASE_DIR / "adaptive_learning.db")
+)
+HOST = os.getenv("HOST", "127.0.0.1")
+PORT = int(os.getenv("PORT", "8000"))
+UVICORN_RELOAD = os.getenv("UVICORN_RELOAD", "true").lower() == "true"
 
 if not GEMINI_API_KEY:
     print("WARNING: GEMINI_API_KEY not set! Please set your API key.")
@@ -64,7 +70,7 @@ GEMINI_CONFIG = {
 # Database Configuration
 DATABASE_CONFIG = {
     "db_type": "sqlite",
-    "db_path": str(BASE_DIR / "adaptive_learning.db"),
+    "db_path": DATABASE_PATH,
 }
 
 # Exercise Difficulty Levels

@@ -4,6 +4,7 @@ Unit tests for the Adaptive Learning Platform Backend
 Run with: pytest -v test_backend.py
 """
 import pytest
+from fastapi.testclient import TestClient
 from models import (
     UserProfile,
     Exercise,
@@ -17,6 +18,7 @@ from models import (
 )
 from scoring import scoring_engine
 from decision_engine import decision_engine
+from main import app
 
 
 class TestScoringEngine:
@@ -271,6 +273,19 @@ class TestIntegration:
 
         assert accuracy == pytest.approx(66.67, 0.1)
         assert status in [MasteryStatus.LEARNING, MasteryStatus.STRUGGLING]
+
+
+class TestFrontendIntegration:
+    """Smoke tests for the browser-facing frontend."""
+
+    def test_root_serves_frontend_html(self):
+        """The backend root should serve the integrated frontend."""
+        client = TestClient(app)
+        response = client.get("/")
+
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
+        assert "SciMath Adaptive Coach" in response.text
 
 
 if __name__ == "__main__":

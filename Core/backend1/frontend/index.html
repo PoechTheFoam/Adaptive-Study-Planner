@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciMath Adaptive Coach</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="page-shell">
+        <div class="ambient ambient-one"></div>
+        <div class="ambient ambient-two"></div>
+
+        <header class="hero reveal">
+            <div class="hero-copy">
+                <p class="eyebrow">Adaptive Learning Platform</p>
+                <h1>SciMath Adaptive Coach</h1>
+                <p class="hero-text">
+                    A real frontend for your backend. Create a learner, pull AI-powered
+                    questions, request hints, submit answers, and track progress from one place.
+                </p>
+            </div>
+            <div class="hero-status">
+                <div class="status-card">
+                    <span class="status-label">Backend status</span>
+                    <strong id="healthStatus">Checking...</strong>
+                    <span id="healthDetail" class="status-detail">Connecting to API</span>
+                </div>
+                <div class="status-card accent">
+                    <span class="status-label">Session mode</span>
+                    <strong id="sessionState">No learner yet</strong>
+                    <span id="sessionDetail" class="status-detail">Create a profile to begin</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <section class="panel reveal delay-1">
+                <div class="panel-head">
+                    <div>
+                        <p class="eyebrow">Step 1</p>
+                        <h2>Create Learner</h2>
+                    </div>
+                    <button id="createUserBtn" class="button primary" type="button">
+                        Start Session
+                    </button>
+                </div>
+
+                <form id="userForm" class="form-grid">
+                    <label>
+                        <span>Name</span>
+                        <input id="nameInput" name="name" type="text" placeholder="Ada Lovelace" value="Ada">
+                    </label>
+                    <label>
+                        <span>Skill level</span>
+                        <select id="skillLevelSelect" name="skill_level">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Learning goal</span>
+                        <select id="goalSelect" name="goal">
+                            <option value="mastery">Mastery</option>
+                            <option value="exam">Exam</option>
+                            <option value="speed">Speed</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Initial topic</span>
+                        <select id="topicSelect" name="initial_topic"></select>
+                    </label>
+                </form>
+
+                <div id="userSummary" class="empty-state compact">
+                    Learner profile will appear here after you create a session.
+                </div>
+            </section>
+
+            <section class="panel panel-wide reveal delay-2">
+                <div class="panel-head">
+                    <div>
+                        <p class="eyebrow">Step 2</p>
+                        <h2>Question Studio</h2>
+                    </div>
+                    <div class="action-row">
+                        <button id="questionBtn" class="button secondary" type="button">
+                            Get Question
+                        </button>
+                        <button id="hintBtn" class="button ghost" type="button" disabled>
+                            Get Hint
+                        </button>
+                    </div>
+                </div>
+
+                <div class="question-layout">
+                    <article class="question-card">
+                        <div class="question-meta">
+                            <span id="topicBadge" class="badge">No topic</span>
+                            <span id="difficultyBadge" class="badge subtle">No difficulty</span>
+                            <span id="timerBadge" class="badge timer">00.0s</span>
+                        </div>
+                        <h3 id="questionText">Fetch a question to begin.</h3>
+                        <div id="hintList" class="hint-list"></div>
+                    </article>
+
+                    <div class="answer-card">
+                        <label class="answer-label" for="answerInput">Your answer</label>
+                        <textarea id="answerInput" rows="4" placeholder="Type your answer here..."></textarea>
+                        <div class="answer-actions">
+                            <button id="submitBtn" class="button primary" type="button" disabled>
+                                Submit Answer
+                            </button>
+                            <button id="nextBtn" class="button secondary" type="button" disabled>
+                                Load Next Question
+                            </button>
+                        </div>
+                        <div id="feedbackBox" class="feedback-box neutral">
+                            Feedback and explanations will appear here.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel reveal delay-3">
+                <div class="panel-head">
+                    <div>
+                        <p class="eyebrow">Step 3</p>
+                        <h2>Adaptive Next Action</h2>
+                    </div>
+                    <button id="refreshProgressBtn" class="button ghost" type="button" disabled>
+                        Refresh Progress
+                    </button>
+                </div>
+
+                <div id="nextActionBox" class="empty-state compact">
+                    Submit an answer to see the decision engine respond.
+                </div>
+            </section>
+
+            <section class="panel reveal delay-4">
+                <div class="panel-head">
+                    <div>
+                        <p class="eyebrow">Profile</p>
+                        <h2>Session Snapshot</h2>
+                    </div>
+                </div>
+
+                <div id="profileGrid" class="stats-grid">
+                    <div class="stat-card">
+                        <span>Learner</span>
+                        <strong>Not created</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Topic</span>
+                        <strong>Waiting</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Difficulty</span>
+                        <strong>Waiting</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Mastery</span>
+                        <strong>0%</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel panel-wide reveal delay-5">
+                <div class="panel-head">
+                    <div>
+                        <p class="eyebrow">Progress</p>
+                        <h2>Topic Momentum</h2>
+                    </div>
+                </div>
+
+                <div id="progressGrid" class="progress-grid">
+                    <div class="empty-state">
+                        Progress cards will appear once the learner starts answering questions.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js" defer></script>
+</body>
+</html>

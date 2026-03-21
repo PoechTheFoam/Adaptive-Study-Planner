@@ -9,8 +9,12 @@ Main application with endpoints:
 - /user/progress
 - /health
 """
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
@@ -32,8 +36,11 @@ from gemini_integration import gemini_client
 from config import TOPICS, SKILL_LEVELS, GOALS
 
 # ============================================================================
-# IMPORTANT REMINDER: Add your GEMINI_API_KEY to config.py!
+# IMPORTANT REMINDER: Set GEMINI_API_KEY in your environment or .env file.
 # ============================================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 
 # FastAPI app setup
 app = FastAPI(
@@ -50,6 +57,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 # ============================================================================
 # Pydantic Models for Request/Response
@@ -567,9 +576,15 @@ async def get_topics():
     return {"topics": TOPICS, "count": len(TOPICS)}
 
 
-@app.get("/")
+@app.get("/", response_class=FileResponse)
 async def root():
-    """Root endpoint - API documentation"""
+    """Serve the frontend application."""
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/api/info")
+async def api_info():
+    """Backend metadata for debugging and integrations."""
     return {
         "name": "Adaptive Learning Platform Backend",
         "version": "1.0.0",
