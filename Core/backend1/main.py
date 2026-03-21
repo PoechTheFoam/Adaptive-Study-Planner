@@ -15,17 +15,21 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 import uuid
-import time
 
 from models import (
-    UserProfile, Exercise, UserAnswer, DifficultyLevel, 
-    SkillLevel, Goal, TopicPerformance
+    UserProfile,
+    Exercise,
+    UserAnswer,
+    DifficultyLevel,
+    SkillLevel,
+    Goal,
+    TopicPerformance,
 )
 from database import db
 from scoring import scoring_engine
 from decision_engine import decision_engine
 from gemini_integration import gemini_client
-from config import TOPICS, DIFFICULTY_LEVELS, SKILL_LEVELS, GOALS
+from config import TOPICS, SKILL_LEVELS, GOALS
 
 # ============================================================================
 # IMPORTANT REMINDER: Add your GEMINI_API_KEY to config.py!
@@ -35,7 +39,7 @@ from config import TOPICS, DIFFICULTY_LEVELS, SKILL_LEVELS, GOALS
 app = FastAPI(
     title="Adaptive Learning Platform Backend",
     description="AI-powered adaptive learning system with Gemini integration",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS middleware
@@ -51,8 +55,10 @@ app.add_middleware(
 # Pydantic Models for Request/Response
 # ============================================================================
 
+
 class CreateUserRequest(BaseModel):
     """Request to create a new user"""
+
     name: str
     skill_level: str  # beginner, intermediate, advanced
     goal: str  # exam, mastery, speed
@@ -61,12 +67,14 @@ class CreateUserRequest(BaseModel):
 
 class GetQuestionRequest(BaseModel):
     """Request to get a question"""
+
     user_id: str
     topic: Optional[str] = None  # If None, use current topic
 
 
 class SubmitAnswerRequest(BaseModel):
     """Request to submit an answer"""
+
     user_id: str
     exercise_id: str
     user_answer: str
@@ -76,6 +84,7 @@ class SubmitAnswerRequest(BaseModel):
 
 class QuestionResponse(BaseModel):
     """Response containing a question"""
+
     exercise_id: str
     topic: str
     difficulty: str
@@ -85,6 +94,7 @@ class QuestionResponse(BaseModel):
 
 class AnswerSubmissionResponse(BaseModel):
     """Response after submitting an answer"""
+
     is_correct: bool
     explanation: str
     mastery_score: float
@@ -94,6 +104,7 @@ class AnswerSubmissionResponse(BaseModel):
 
 class NextActionResponse(BaseModel):
     """Response with next action recommendation"""
+
     action: str
     recommended_difficulty: str
     recommended_topic: str
@@ -103,6 +114,7 @@ class NextActionResponse(BaseModel):
 
 class UserProfileResponse(BaseModel):
     """User profile response"""
+
     user_id: str
     name: str
     skill_level: str
@@ -115,6 +127,7 @@ class UserProfileResponse(BaseModel):
 
 class UserProgressResponse(BaseModel):
     """User progress across topics"""
+
     user_id: str
     overall_mastery: float
     topics: List[dict]
@@ -124,13 +137,28 @@ class UserProgressResponse(BaseModel):
 # API Endpoints
 # ============================================================================
 
+
+def _is_legacy_placeholder_exercise(exercise: Exercise) -> bool:
+    """
+    Ignore old cached demo questions that only told users to set an API key.
+    """
+    legacy_markers = (
+        exercise.answer.lower(),
+        exercise.explanation.lower(),
+    )
+    blocked_terms = ("api key", "gemini_api_key", "demo placeholder")
+    return any(
+        term in marker for marker in legacy_markers for term in blocked_terms
+    )
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "message": "Adaptive Learning Platform Backend is running"
+        "message": "Adaptive Learning Platform Backend is running",
     }
 
 
@@ -138,22 +166,29 @@ async def health_check():
 async def create_user(request: CreateUserRequest):
     """
     Create a new user.
-    
+
     Args:
         name: User's name
         skill_level: beginner, intermediate, or advanced
         goal: exam, mastery, or speed
         initial_topic: Starting topic
     """
-    
+
     # Validate inputs
     if request.skill_level not in SKILL_LEVELS:
-        raise HTTPException(status_code=400, detail=f"Invalid skill level: {request.skill_level}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid skill level: {request.skill_level}",
+        )
     if request.goal not in GOALS:
-        raise HTTPException(status_code=400, detail=f"Invalid goal: {request.goal}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid goal: {request.goal}"
+        )
     if request.initial_topic not in TOPICS:
-        raise HTTPException(status_code=400, detail=f"Invalid topic: {request.initial_topic}")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Invalid topic: {request.initial_topic}"
+        )
+
     # Create user
     user_id = str(uuid.uuid4())
     user = UserProfile(
@@ -162,17 +197,17 @@ async def create_user(request: CreateUserRequest):
         skill_level=SkillLevel(request.skill_level),
         goal=Goal(request.goal),
         current_topic=request.initial_topic,
-        current_difficulty=DifficultyLevel.MEDIUM
+        current_difficulty=DifficultyLevel.MEDIUM,
     )
-    
+
     # Save to database
     if not db.create_user(user):
         raise HTTPException(status_code=500, detail="Failed to create user")
-    
+
     # Initialize topic performance
     perf = TopicPerformance(topic=request.initial_topic)
     db.save_topic_performance(user_id, perf)
-    
+
     return UserProfileResponse(
         user_id=user.user_id,
         name=user.name,
@@ -181,7 +216,7 @@ async def create_user(request: CreateUserRequest):
         current_topic=user.current_topic,
         current_difficulty=user.current_difficulty.value,
         overall_mastery=user.overall_mastery,
-        total_questions_answered=user.total_questions_answered
+        total_questions_answered=user.total_questions_answered,
     )
 
 
@@ -189,43 +224,49 @@ async def create_user(request: CreateUserRequest):
 async def get_question(request: GetQuestionRequest):
     """
     Get a question for the user.
-    
+
     Returns a question based on user's current level and topic.
     """
-    
+
     # Get user
     user = db.get_user(request.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     # Determine topic
     topic = request.topic if request.topic else user.current_topic
     if not topic:
         raise HTTPException(status_code=400, detail="No topic specified")
-    
+
     # Get current difficulty
     difficulty = user.current_difficulty
-    
+
     # Try to get exercise from database
-    exercises = db.get_exercises_by_topic_difficulty(topic, difficulty)
-    
+    exercises = [
+        exercise
+        for exercise in db.get_exercises_by_topic_difficulty(topic, difficulty)
+        if not _is_legacy_placeholder_exercise(exercise)
+    ]
+
     if exercises:
         # Pick a random exercise from database
         exercise = exercises[0]  # In production, randomize
     else:
         # Generate new exercise using Gemini
         print(f"📝 Generating new question for {topic} ({difficulty.value})...")
-        
+
         gen_data = gemini_client.generate_question(
             topic=topic,
             difficulty=difficulty,
             skill_level=user.skill_level.value,
-            goal=user.goal.value
+            goal=user.goal.value,
         )
-        
+
         if not gen_data:
-            raise HTTPException(status_code=500, detail="Failed to generate question")
-        
+            raise HTTPException(
+                status_code=500, detail="Failed to generate question"
+            )
+
         # Create exercise object
         exercise_id = str(uuid.uuid4())
         exercise = Exercise(
@@ -235,18 +276,18 @@ async def get_question(request: GetQuestionRequest):
             question=gen_data["question"],
             answer=gen_data["answer"],
             explanation=gen_data["explanation"],
-            hints=gen_data.get("hints", [])
+            hints=gen_data.get("hints", []),
         )
-        
+
         # Save to database for reuse
         db.create_exercise(exercise)
-    
+
     return QuestionResponse(
         exercise_id=exercise.exercise_id,
         topic=exercise.topic,
         difficulty=exercise.difficulty.value,
         question=exercise.question,
-        hints_available=len(exercise.hints)
+        hints_available=len(exercise.hints),
     )
 
 
@@ -254,18 +295,18 @@ async def get_question(request: GetQuestionRequest):
 async def get_hint(user_id: str, exercise_id: str, hint_number: int = 1):
     """
     Get a hint for a question.
-    
+
     Args:
         user_id: User ID
         exercise_id: Exercise ID
         hint_number: Which hint to get (1, 2, etc.)
     """
-    
+
     # Get exercise
     exercise = db.get_exercise(exercise_id)
     if not exercise:
         raise HTTPException(status_code=404, detail="Exercise not found")
-    
+
     # Check if hint exists in database
     if hint_number <= len(exercise.hints):
         hint = exercise.hints[hint_number - 1]
@@ -274,13 +315,13 @@ async def get_hint(user_id: str, exercise_id: str, hint_number: int = 1):
         hint = gemini_client.generate_hint(
             question=exercise.question,
             topic=exercise.topic,
-            hint_number=hint_number
+            hint_number=hint_number,
         )
-    
+
     return {
         "hint": hint,
         "hint_number": hint_number,
-        "exercise_id": exercise_id
+        "exercise_id": exercise_id,
     }
 
 
@@ -288,23 +329,25 @@ async def get_hint(user_id: str, exercise_id: str, hint_number: int = 1):
 async def submit_answer(request: SubmitAnswerRequest):
     """
     Submit an answer to a question.
-    
+
     Evaluates the answer, calculates score, and provides feedback.
     ⚠️  IMPORTANT: Make sure your GEMINI_API_KEY is set!
     """
-    
+
     # Get user and exercise
     user = db.get_user(request.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     exercise = db.get_exercise(request.exercise_id)
     if not exercise:
         raise HTTPException(status_code=404, detail="Exercise not found")
-    
+
     # Check if answer is correct (case-insensitive for simple comparison)
-    is_correct = request.user_answer.strip().lower() == exercise.answer.strip().lower()
-    
+    is_correct = (
+        request.user_answer.strip().lower() == exercise.answer.strip().lower()
+    )
+
     # Create user answer record
     user_answer = UserAnswer(
         user_id=request.user_id,
@@ -312,70 +355,92 @@ async def submit_answer(request: SubmitAnswerRequest):
         user_answer=request.user_answer,
         is_correct=is_correct,
         response_time=request.response_time,
-        hints_used=request.hints_used
+        hints_used=request.hints_used,
     )
-    
+
     # Save answer
     db.save_answer(user_answer)
-    
+
+    previous_total_questions = user.total_questions_answered
+    user.total_questions_answered += 1
+    if previous_total_questions == 0:
+        user.average_response_time = request.response_time
+    else:
+        total_time = (
+            user.average_response_time * previous_total_questions
+        ) + request.response_time
+        user.average_response_time = total_time / user.total_questions_answered
+
     # Calculate score
     question_score = scoring_engine.calculate_question_score(
         is_correct=is_correct,
         difficulty=exercise.difficulty,
-        hints_used=request.hints_used
+        hints_used=request.hints_used,
     )
-    
+
     # Get all topic answers for mastery calculation
-    topic_answers = db.get_user_answers_for_topic(request.user_id, exercise.topic)
-    
+    topic_answers = db.get_user_answers_for_topic(
+        request.user_id, exercise.topic
+    )
+
     # Update topic performance
     topic_perf = db.get_topic_performance(request.user_id, exercise.topic)
     if not topic_perf:
         topic_perf = TopicPerformance(topic=exercise.topic)
-    
+
     response_times = [ans.response_time for ans in topic_answers]
     topic_perf = scoring_engine.update_topic_performance(
         topic_perf, user_answer, exercise, topic_answers, response_times
     )
-    
+
     db.save_topic_performance(request.user_id, topic_perf)
-    
+
     # Update overall user mastery
     all_perfs = db.get_all_topic_performance(request.user_id)
-    total_mastery = sum(p.mastery_score for p in all_perfs) / len(all_perfs) if all_perfs else 0
+    total_mastery = (
+        sum(p.mastery_score for p in all_perfs) / len(all_perfs)
+        if all_perfs
+        else 0
+    )
     user.overall_mastery = total_mastery
-    
+
     # Generate explanation
     explanation = gemini_client.generate_explanation(
         question=exercise.question,
         correct_answer=exercise.answer,
-        user_answer=request.user_answer if not is_correct else None
+        user_answer=request.user_answer if not is_correct else None,
     )
-    
+
     # Decide if should give hint
     should_give_hint = decision_engine.should_give_hint(
         hints_already_used=request.hints_used,
         mastery_score=topic_perf.mastery_score,
-        question_difficulty=exercise.difficulty
+        question_difficulty=exercise.difficulty,
     )
-    
+
     # Generate feedback
     if is_correct:
-        feedback = f"✅ Correct! Great job on this {exercise.difficulty.value} question!"
+        feedback = (
+            f"✅ Correct! Great job on this "
+            f"{exercise.difficulty.value} question!"
+        )
         if question_score.score < 0.5:
-            feedback += " (But you used hints - try without hints next time for full points)"
+            feedback += (
+                " (But you used hints - try without hints next time "
+                "for full points)"
+            )
     else:
         feedback = f"❌ Incorrect. The correct answer is: {exercise.answer}"
-    
+
     # Save updated user
     db.update_user(user)
-    
+
     return AnswerSubmissionResponse(
         is_correct=is_correct,
         explanation=explanation,
         mastery_score=topic_perf.mastery_score,
         feedback=feedback,
-        should_give_hint=should_give_hint
+        should_give_hint=should_give_hint,
     )
 
 
@@ -383,27 +448,27 @@ async def submit_answer(request: SubmitAnswerRequest):
 async def next_action(user_id: str):
     """
     Get the next recommended action for the user.
-    
+
     Uses the decision engine to recommend:
     - Next difficulty level
     - Whether to review or advance
     - Next topic
     - Whether to provide hints
     """
-    
+
     # Get user and performance data
     user = db.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     # Get current topic performance
     topic_perf = db.get_topic_performance(user_id, user.current_topic)
     if not topic_perf:
         topic_perf = TopicPerformance(topic=user.current_topic)
-    
+
     # Get recent answers
     recent_answers = db.get_user_answers(user_id, limit=5)
-    
+
     # Get decision from decision engine
     decision = decision_engine.decide_next_action(
         topic_performance=topic_perf,
@@ -411,20 +476,28 @@ async def next_action(user_id: str):
         current_difficulty=user.current_difficulty,
         recent_answers=recent_answers,
         exercises={},  # Could load exercises if needed
-        all_topics=TOPICS
+        all_topics=TOPICS,
     )
-    
-    # Update user if difficulty changed
-    if decision.recommended_difficulty != user.current_difficulty:
+
+    # Update user state if the recommendation changes it
+    difficulty_changed = (
+        decision.recommended_difficulty != user.current_difficulty
+    )
+    topic_changed = decision.recommended_topic != user.current_topic
+
+    if difficulty_changed:
         user.current_difficulty = decision.recommended_difficulty
+    if topic_changed:
+        user.current_topic = decision.recommended_topic
+    if difficulty_changed or topic_changed:
         db.update_user(user)
-    
+
     return NextActionResponse(
         action=decision.action,
         recommended_difficulty=decision.recommended_difficulty.value,
         recommended_topic=decision.recommended_topic,
         reason=decision.reason,
-        feedback=decision.feedback
+        feedback=decision.feedback,
     )
 
 
@@ -434,7 +507,7 @@ async def get_user_profile(user_id: str):
     user = db.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     return UserProfileResponse(
         user_id=user.user_id,
         name=user.name,
@@ -443,7 +516,7 @@ async def get_user_profile(user_id: str):
         current_topic=user.current_topic,
         current_difficulty=user.current_difficulty.value,
         overall_mastery=user.overall_mastery,
-        total_questions_answered=user.total_questions_answered
+        total_questions_answered=user.total_questions_answered,
     )
 
 
@@ -455,16 +528,16 @@ async def get_user_progress(user_id: str):
     user = db.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     # Get performance for all topics
     all_perfs = db.get_all_topic_performance(user_id)
-    
+
     topics_data = [p.to_dict() for p in all_perfs]
-    
+
     return UserProgressResponse(
         user_id=user_id,
         overall_mastery=user.overall_mastery,
-        topics=topics_data
+        topics=topics_data,
     )
 
 
@@ -474,12 +547,15 @@ async def get_questions_by_difficulty(topic: str, difficulty: str):
     try:
         diff_enum = DifficultyLevel(difficulty)
         exercises = db.get_exercises_by_topic_difficulty(topic, diff_enum)
-        
+
         return {
             "topic": topic,
             "difficulty": difficulty,
             "count": len(exercises),
-            "exercises": [{"exercise_id": e.exercise_id, "question": e.question} for e in exercises]
+            "exercises": [
+                {"exercise_id": e.exercise_id, "question": e.question}
+                for e in exercises
+            ],
         }
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid difficulty level")
@@ -488,10 +564,7 @@ async def get_questions_by_difficulty(topic: str, difficulty: str):
 @app.get("/topics")
 async def get_topics():
     """Get list of available topics"""
-    return {
-        "topics": TOPICS,
-        "count": len(TOPICS)
-    }
+    return {"topics": TOPICS, "count": len(TOPICS)}
 
 
 @app.get("/")
@@ -511,9 +584,11 @@ async def root():
             "user_profile": "GET /user/profile",
             "user_progress": "GET /user/progress",
             "available_topics": "GET /topics",
-            "questions_by_difficulty": "GET /questions/by-difficulty"
+            "questions_by_difficulty": "GET /questions/by-difficulty",
         },
-        "important_reminder": "⚠️  MAKE SURE TO SET YOUR GEMINI_API_KEY IN config.py!"
+        "important_reminder": (
+            "⚠️  MAKE SURE TO SET YOUR GEMINI_API_KEY IN config.py!"
+        ),
     }
 
 
@@ -524,22 +599,18 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
     from config import GEMINI_API_KEY
-    
-    print("\n" + "="*70)
+
+    print("\n" + "=" * 70)
     print("🚀 Adaptive Learning Platform Backend")
-    print("="*70)
-    print(f"📝 Config file: config.py")
+    print("=" * 70)
+    print("📝 Config file: config.py")
     api_status = "✅ Yes" if GEMINI_API_KEY else "❌ No"
     print(f"🔑 GEMINI_API_KEY set: {api_status}")
-    print(f"💾 Database: adaptive_learning.db")
+    print("💾 Database: adaptive_learning.db")
     print("\n🌐 Starting server on http://127.0.0.1:8000")
     print("📚 API Docs: http://127.0.0.1:8000/docs")
-    print("="*70 + "\n")
-    
+    print("=" * 70 + "\n")
+
     uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=8000,
-        reload=True,
-        log_level="info"
+        app, host="127.0.0.1", port=8000, reload=True, log_level="info"
     )
