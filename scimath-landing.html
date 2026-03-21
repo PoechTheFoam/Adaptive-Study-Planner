@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SciMath Academy</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════
+   TOKENS & RESET
+═══════════════════════════════════════ */
+    :root {
+      --green: #005F02;
+      --green-mid: #427A43;
+      --cream: #F2E3BB;
+      --cream-light: #FBF5E6;
+      --cream-dark: #E8D49A;
+      --ink: #0E1A0E;
+      --white: #FFFFFF;
+
+      --ease-out: cubic-bezier(.22, 1, .36, 1);
+      --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      background: var(--cream-light);
+      color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--cream);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--green-mid);
+      border-radius: 99px;
+    }
+
+    /* ═══════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
+    }
+
+    .reveal.up {
+      transform: translateY(40px);
+    }
+
+    .reveal.left {
+      transform: translateX(-50px);
+    }
+
+    .reveal.right {
+      transform: translateX(50px);
+    }
+
+    .reveal.scale {
+      transform: scale(.92);
+    }
+
+    .reveal.in {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .delay-1 {
+      transition-delay: .1s;
+    }
+
+    .delay-2 {
+      transition-delay: .2s;
+    }
+
+    .delay-3 {
+      transition-delay: .3s;
+    }
+
+    .delay-4 {
+      transition-delay: .4s;
+    }
+
+    .delay-5 {
+      transition-delay: .5s;
+    }
+
+    .delay-6 {
+      transition-delay: .6s;
+    }
+
+    /* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 4rem;
+      transition: background .4s, box-shadow .4s, padding .4s;
+    }
+
+    nav.scrolled {
+      background: rgba(0, 95, 2, .97);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, .18);
+      padding: .75rem 4rem;
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--cream);
+      letter-spacing: -.01em;
+      margin-right: 3rem;
+    }
+
+    .nav-logo span {
+      color: var(--cream-dark);
+      font-style: italic;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(242, 227, 187, .7);
+      transition: color .2s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--cream);
+      transform: scaleX(0);
+      transition: transform .25s var(--ease-out);
+      transform-origin: left;
+    }
+
+    .nav-links a:hover {
+      color: var(--cream);
+    }
+
+    .nav-links a:hover::after {
+      transform: scaleX(1);
+    }
+
+    /* hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--cream);
+      border-radius: 99px;
+      transition: .3s;
+    }
+
+    /* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+    #hero {
+      min-height: 100vh;
+      background: var(--green);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8rem 2rem 5rem;
+      text-align: center;
+    }
+
+    /* animated mesh background */
+    .hero-mesh {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .mesh-circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .18;
+      animation: mesh-drift 12s ease-in-out infinite alternate;
+    }
+
+    .mc1 {
+      width: 600px;
+      height: 600px;
+      background: var(--green-mid);
+      top: -200px;
+      left: -150px;
+      animation-delay: 0s;
+    }
+
+    .mc2 {
+      width: 500px;
+      height: 500px;
+      background: var(--cream);
+      bottom: -150px;
+      right: -100px;
+      animation-delay: -4s;
+    }
+
+    .mc3 {
+      width: 350px;
+      height: 350px;
+      background: #2d6b2e;
+      top: 40%;
+      left: 40%;
+      animation-delay: -8s;
+    }
+
+    @keyframes mesh-drift {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(40px, 30px) scale(1.1);
+      }
+    }
+
+    /* floating math orbs */
+    .orb-field {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      color: rgba(242, 227, 187, .15);
+      animation: orb-float linear infinite;
+      user-select: none;
+    }
+
+    @keyframes orb-float {
+      0% {
+        transform: translateY(110vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      5% {
+        opacity: 1;
+      }
+
+      95% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(242, 227, 187, .12);
+      border: 1px solid rgba(242, 227, 187, .25);
+      color: var(--cream-dark);
+      padding: .4rem 1rem;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: badge-in 1s var(--ease-out) .2s both;
+    }
+
+    @keyframes badge-in {
+      from {
+        opacity: 0;
+        transform: translateY(-12px) scale(.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 8vw, 7.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      color: var(--cream);
+      letter-spacing: -.02em;
+      margin-bottom: 1.5rem;
+      animation: title-in 1.1s var(--ease-out) .4s both;
+    }
+
+    @keyframes title-in {
+      from {
+        opacity: 0;
+        transform: translateY(40px) skewY(2deg);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--cream-dark);
+    }
+
+    .hero-title .line2 {
+      display: block;
+    }
+
+    .hero-sub {
+      font-family: 'Lora', serif;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: rgba(242, 227, 187, .75);
+      max-width: 560px;
+      line-height: 1.7;
+      margin: 0 auto 3rem;
+      animation: sub-in 1s var(--ease-out) .65s both;
+    }
+
+    @keyframes sub-in {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: actions-in 1s var(--ease-out) .85s both;
+    }
+
+    @keyframes actions-in {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .btn-primary {
+      background: var(--cream);
+      color: var(--green);
+      padding: .9rem 2.2rem;
+      border-radius: 99px;
+      font-size: .88rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 2px solid transparent;
+      transition: all .25s var(--ease-bounce);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .2);
+    }
+
+    .btn-primary:hover {
+      background: var(--green);
+      color: var(--cream);
+      border-color: var(--cream);
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, .3);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--cream);
+      padding: .9rem 2.2rem;
+      border-radius: 99px;
+      font-size: .88rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 2px solid rgba(242, 227, 187, .4);
+      transition: all .25s var(--ease-bounce);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(242, 227, 187, .1);
+      border-color: var(--cream);
+      transform: translateY(-3px);
+    }
+
+    /* hero stats */
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 4.5rem;
+      animation: stats-in 1s var(--ease-out) 1.1s both;
+    }
+
+    @keyframes stats-in {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--cream);
+      display: block;
+      line-height: 1;
+    }
+
+    .stat-lab {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(242, 227, 187, .5);
+      margin-top: .25rem;
+    }
+
+    /* scroll indicator */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .4rem;
+      animation: fade-in 1s .2s both, bob 2s 2s ease-in-out infinite;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes bob {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0)
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(6px)
+      }
+    }
+
+    .scroll-hint span {
+      font-size: .62rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(242, 227, 187, .4);
+    }
+
+    .scroll-arrow {
+      width: 20px;
+      height: 20px;
+      border-right: 2px solid rgba(242, 227, 187, .3);
+      border-bottom: 2px solid rgba(242, 227, 187, .3);
+      transform: rotate(45deg);
+    }
+
+    /* ═══════════════════════════════════════
+   SECTION COMMONS
+═══════════════════════════════════════ */
+    section {
+      padding: 7rem 4rem;
+    }
+
+    .section-tag {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: rgba(0, 95, 2, .08);
+      padding: .35rem .9rem;
+      border-radius: 99px;
+      margin-bottom: 1.1rem;
+      border: 1px solid rgba(0, 95, 2, .15);
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4.5vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--ink);
+      letter-spacing: -.02em;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: var(--green);
+    }
+
+    .section-sub {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      color: #4a5240;
+      max-width: 520px;
+      line-height: 1.75;
+    }
+
+    /* ═══════════════════════════════════════
+   INTRO / ABOUT NUMBERS
+═══════════════════════════════════════ */
+    #intro {
+      background: var(--cream-light);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .intro-visual {
+      position: relative;
+      height: 480px;
+    }
+
+    .intro-card-big {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 72%;
+      background: var(--green);
+      border-radius: 24px;
+      height: 84%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    .intro-card-big::before {
+      content: '∑∫π';
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem;
+      font-weight: 900;
+      color: rgba(255, 255, 255, .07);
+      line-height: 1;
+      letter-spacing: -.05em;
+    }
+
+    .intro-card-big h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--cream);
+      margin-bottom: .4rem;
+    }
+
+    .intro-card-big p {
+      font-size: .82rem;
+      color: rgba(242, 227, 187, .65);
+      line-height: 1.6;
+    }
+
+    .intro-card-sm {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 55%;
+      background: var(--cream);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .1);
+    }
+
+    .intro-card-sm .stat-big {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .intro-card-sm p {
+      font-size: .78rem;
+      color: #6b7560;
+      margin-top: .25rem;
+    }
+
+    .intro-tag-pill {
+      position: absolute;
+      top: 42%;
+      right: -1rem;
+      background: var(--green-mid);
+      color: var(--cream);
+      padding: .5rem 1rem;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+      animation: float-pill 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes float-pill {
+      from {
+        transform: translateY(0)
+      }
+
+      to {
+        transform: translateY(-10px)
+      }
+    }
+
+    /* ═══════════════════════════════════════
+   LEVELS
+═══════════════════════════════════════ */
+    #levels {
+      background: var(--green);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #levels .section-tag {
+      color: var(--cream-dark);
+      background: rgba(242, 227, 187, .12);
+      border-color: rgba(242, 227, 187, .2);
+    }
+
+    #levels .section-title {
+      color: var(--cream);
+    }
+
+    #levels .section-sub {
+      color: rgba(242, 227, 187, .65);
+    }
+
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .level-card {
+      background: rgba(242, 227, 187, .06);
+      border: 1px solid rgba(242, 227, 187, .14);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: background .3s, transform .35s var(--ease-bounce), box-shadow .3s;
+      cursor: default;
+    }
+
+    .level-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(242, 227, 187, .08) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .level-card:hover {
+      background: rgba(242, 227, 187, .11);
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
+    }
+
+    .level-card:hover::before {
+      opacity: 1;
+    }
+
+    .lc-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem;
+      font-weight: 900;
+      color: rgba(242, 227, 187, .06);
+      position: absolute;
+      top: .5rem;
+      right: 1.25rem;
+      line-height: 1;
+      letter-spacing: -.05em;
+      pointer-events: none;
+      transition: color .3s;
+    }
+
+    .level-card:hover .lc-number {
+      color: rgba(242, 227, 187, .1);
+    }
+
+    .lc-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .lc-grade {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--cream-dark);
+      margin-bottom: .5rem;
+      display: block;
+    }
+
+    .lc-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: .75rem;
+      line-height: 1.2;
+    }
+
+    .lc-desc {
+      font-size: .85rem;
+      color: rgba(242, 227, 187, .6);
+      line-height: 1.65;
+      margin-bottom: 1.75rem;
+    }
+
+    .lc-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+
+    .lc-pill {
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .28rem .7rem;
+      border-radius: 99px;
+      background: rgba(242, 227, 187, .1);
+      color: rgba(242, 227, 187, .7);
+      border: 1px solid rgba(242, 227, 187, .15);
+    }
+
+    /* ═══════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════ */
+    #features {
+      background: var(--cream-light);
+    }
+
+    .features-header {
+      max-width: 600px;
+      margin-bottom: 4rem;
+    }
+
+    .features-bento {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: auto;
+      gap: 1.25rem;
+    }
+
+    .feat-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2rem;
+      border: 1px solid rgba(0, 95, 2, .08);
+      position: relative;
+      overflow: hidden;
+      transition: transform .35s var(--ease-bounce), box-shadow .3s;
+    }
+
+    .feat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0, 95, 2, .1);
+    }
+
+    .feat-card.c1 {
+      grid-column: span 5;
+    }
+
+    .feat-card.c2 {
+      grid-column: span 4;
+    }
+
+    .feat-card.c3 {
+      grid-column: span 3;
+    }
+
+    .feat-card.c4 {
+      grid-column: span 3;
+    }
+
+    .feat-card.c5 {
+      grid-column: span 5;
+    }
+
+    .feat-card.c6 {
+      grid-column: span 4;
+    }
+
+    .feat-card.dark {
+      background: var(--green);
+      border-color: transparent;
+    }
+
+    .feat-card.mid {
+      background: var(--green-mid);
+      border-color: transparent;
+    }
+
+    .feat-card.cream-card {
+      background: var(--cream);
+      border-color: transparent;
+    }
+
+    .feat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .feat-card.dark .feat-icon,
+    .feat-card.mid .feat-icon {
+      background: rgba(255, 255, 255, .12);
+    }
+
+    .feat-icon.green-icon {
+      background: rgba(0, 95, 2, .1);
+    }
+
+    .feat-icon.cream-icon {
+      background: rgba(242, 227, 187, .6);
+    }
+
+    .feat-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+      line-height: 1.3;
+    }
+
+    .feat-card.dark .feat-title,
+    .feat-card.mid .feat-title {
+      color: var(--cream);
+    }
+
+    .feat-desc {
+      font-size: .82rem;
+      line-height: 1.65;
+      color: #5a6252;
+    }
+
+    .feat-card.dark .feat-desc,
+    .feat-card.mid .feat-desc {
+      color: rgba(242, 227, 187, .65);
+    }
+
+    .feat-card.cream-card .feat-desc {
+      color: #5a6252;
+    }
+
+    /* big number decoration */
+    .feat-big-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 6rem;
+      font-weight: 900;
+      color: rgba(0, 95, 2, .05);
+      position: absolute;
+      bottom: -1rem;
+      right: 1rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .feat-card.dark .feat-big-num,
+    .feat-card.mid .feat-big-num {
+      color: rgba(255, 255, 255, .06);
+    }
+
+    /* ═══════════════════════════════════════
+   AI COMPANION
+═══════════════════════════════════════ */
+    #ai {
+      background: var(--cream);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    /* chat mockup */
+    .chat-mockup {
+      background: var(--white);
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(0, 95, 2, .12), 0 4px 12px rgba(0, 0, 0, .06);
+      overflow: hidden;
+      max-width: 460px;
+    }
+
+    .chat-topbar {
+      background: var(--green);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .ai-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .chat-name {
+      font-weight: 700;
+      font-size: .88rem;
+      color: var(--cream);
+    }
+
+    .chat-status {
+      font-size: .7rem;
+      color: rgba(242, 227, 187, .6);
+    }
+
+    .chat-dot {
+      width: 8px;
+      height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      margin-left: auto;
+      animation: blink 2s infinite;
+    }
+
+    .chat-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .chat-body::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .chat-body::-webkit-scrollbar-thumb {
+      background: var(--cream-dark);
+    }
+
+    .bubble {
+      max-width: 82%;
+      padding: .65rem .95rem;
+      border-radius: 16px;
+      font-size: .82rem;
+      line-height: 1.6;
+      animation: bubble-pop .35s var(--ease-bounce) both;
+    }
+
+    @keyframes bubble-pop {
+      from {
+        opacity: 0;
+        transform: scale(.85)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .bubble.ai {
+      background: var(--cream-light);
+      color: var(--ink);
+      border-radius: 4px 16px 16px 16px;
+      align-self: flex-start;
+      border: 1px solid var(--cream-dark);
+    }
+
+    .bubble.user {
+      background: var(--green);
+      color: var(--cream);
+      border-radius: 16px 4px 16px 16px;
+      align-self: flex-end;
+    }
+
+    .bubble code {
+      font-family: monospace;
+      background: rgba(0, 95, 2, .1);
+      color: var(--green);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: .78rem;
+    }
+
+    .bubble.user code {
+      background: rgba(255, 255, 255, .15);
+      color: var(--cream-dark);
+    }
+
+    .bubble-time {
+      font-size: .62rem;
+      opacity: .5;
+      margin-top: .2rem;
+      display: block;
+    }
+
+    .typing-bubble {
+      background: var(--cream-light);
+      border: 1px solid var(--cream-dark);
+      padding: .6rem .95rem;
+      border-radius: 4px 16px 16px 16px;
+      align-self: flex-start;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .typing-bubble span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green-mid);
+      animation: tydot .9s infinite;
+    }
+
+    .typing-bubble span:nth-child(2) {
+      animation-delay: .15s;
+    }
+
+    .typing-bubble span:nth-child(3) {
+      animation-delay: .3s;
+    }
+
+    @keyframes tydot {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(.6);
+        opacity: .4
+      }
+
+      40% {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    .chat-input-bar {
+      padding: .85rem 1.25rem;
+      border-top: 1px solid var(--cream-dark);
+      display: flex;
+      gap: .6rem;
+      align-items: center;
+    }
+
+    .fake-input {
+      flex: 1;
+      background: var(--cream-light);
+      border: 1px solid var(--cream-dark);
+      border-radius: 99px;
+      padding: .5rem 1rem;
+      font-size: .8rem;
+      color: #9aab8a;
+    }
+
+    .send-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cream);
+      font-size: .85rem;
+      border: none;
+      cursor: pointer;
+      transition: transform .2s var(--ease-bounce), background-color .2s;
+    }
+
+    .send-btn:hover {
+      transform: scale(1.15);
+      background: var(--green-mid);
+    }
+
+    /* AI features list */
+    .ai-features {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .ai-feat {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1rem 1.25rem;
+      background: rgba(0, 95, 2, .05);
+      border-radius: 14px;
+      border: 1px solid rgba(0, 95, 2, .1);
+      transition: background-color .25s, transform .25s var(--ease-bounce);
+    }
+
+    .ai-feat:hover {
+      background: rgba(0, 95, 2, .1);
+      transform: translateX(5px);
+    }
+
+    .ai-feat-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      margin-top: .1rem;
+    }
+
+    .ai-feat-title {
+      font-weight: 700;
+      font-size: .88rem;
+      margin-bottom: .2rem;
+      color: var(--green);
+    }
+
+    .ai-feat-desc {
+      font-size: .78rem;
+      color: #5a6252;
+      line-height: 1.55;
+    }
+
+    /* ═══════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════ */
+    #about {
+      background: var(--green-mid);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #about .section-tag {
+      color: var(--cream-dark);
+      background: rgba(242, 227, 187, .15);
+      border-color: rgba(242, 227, 187, .25);
+    }
+
+    #about .section-title {
+      color: var(--cream);
+      max-width: 700px;
+      margin: 0 auto 1.25rem;
+    }
+
+    #about .section-sub {
+      color: rgba(242, 227, 187, .7);
+      margin: 0 auto 4rem;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .team-card {
+      background: rgba(242, 227, 187, .08);
+      border: 1px solid rgba(242, 227, 187, .15);
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: background-color .3s, transform .35s var(--ease-bounce);
+    }
+
+    .team-card:hover {
+      background: rgba(242, 227, 187, .15);
+      transform: translateY(-6px);
+    }
+
+    .team-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      background: rgba(242, 227, 187, .15);
+      border: 2px solid rgba(242, 227, 187, .2);
+    }
+
+    .team-name {
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--cream);
+      margin-bottom: .25rem;
+    }
+
+    .team-role {
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(242, 227, 187, .5);
+    }
+
+    .about-values {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      margin-top: 1.75rem;
+    }
+
+    .val-card {
+      background: rgba(242, 227, 187, .1);
+      border: 1px solid rgba(242, 227, 187, .2);
+      border-radius: 18px;
+      padding: 2.25rem;
+      text-align: left;
+      transition: background-color .3s, transform .3s;
+    }
+
+    .val-card:hover {
+      background: rgba(242, 227, 187, .14);
+      transform: translateY(-3px);
+    }
+
+    /* ═══════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════ */
+    #about {
+      background: var(--green-mid);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #about .section-tag {
+      color: var(--cream-dark);
+      background: rgba(242, 227, 187, .15);
+      border-color: rgba(242, 227, 187, .25);
+    }
+
+    #about .section-title {
+      color: var(--cream);
+      max-width: 700px;
+      margin: 0 auto 1.25rem;
+    }
+
+    #about .section-sub {
+      color: rgba(242, 227, 187, .7);
+      margin: 0 auto 4rem;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .team-card {
+      background: rgba(242, 227, 187, .08);
+      border: 1px solid rgba(242, 227, 187, .15);
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: background-color .3s, transform .35s var(--ease-bounce);
+    }
+
+    .team-card:hover {
+      background: rgba(242, 227, 187, .15);
+      transform: translateY(-6px);
+    }
+
+    .team-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      background: rgba(242, 227, 187, .15);
+      border: 2px solid rgba(242, 227, 187, .2);
+    }
+
+    .team-name {
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--cream);
+      margin-bottom: .25rem;
+    }
+
+    .team-role {
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(242, 227, 187, .5);
+    }
+
+    .about-values {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      margin-top: 1.75rem;
+    }
+
+    .val-card {
+      background: rgba(242, 227, 187, .1);
+      border: 1px solid rgba(242, 227, 187, .2);
+      border-radius: 18px;
+      padding: 2.25rem;
+      text-align: left;
+      transition: background-color .3s, transform .3s;
+    }
+
+    .val-card:hover {
+      background: rgba(242, 227, 187, .14);
+      transform: translateY(-3px);
+    }
+
+    .val-icon {
+      font-size: 1.6rem;
+      margin-bottom: .75rem;
+      display: block;
+    }
+
+    .val-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: #F2E3BB;
+      margin-bottom: .4rem;
+    }
+
+    .val-desc {
+      font-size: .8rem;
+      color: #F2E3BB;
+      line-height: 1.6;
+    }
+
+
+    /* wavy decoration */
+    #about::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--cream-light);
+      clip-path: ellipse(55% 100% at 50% 0%);
+    }
+
+    /* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+    footer {
+      background: var(--cream-light);
+      color: var(--ink);
+      padding: 2.5rem 2rem 1.5rem;
+      border-top: 1px solid var(--green-mid);
+      font-size: .9rem;
+    }
+
+    .footer-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.75rem;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-brand .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: .4rem;
+    }
+
+    .footer-brand p {
+      font-size: .82rem;
+      color: #5f6b52;
+      max-width: 280px;
+      margin: 0;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .footer-col {
+      margin: 0;
+      padding: 0;
+    }
+
+    .footer-col h4 {
+      display: none;
+    }
+
+    .footer-col a {
+      font-size: .82rem;
+      color: #4a5240;
+      margin-bottom: 0;
+      padding: .15rem 0;
+      transition: color .2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--green);
+    }
+
+    .footer-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      justify-content: space-between;
+      align-items: center;
+      color: #7a8a72;
+      font-size: .72rem;
+    }
+
+    .footer-bottom p,
+    .footer-badge {
+      margin: 0;
+    }
+
+    .footer-badge {
+      letter-spacing: .05em;
+      color: #7a8a72;
+      gap: .35rem;
+    }
+
+    .footer-badge::before {
+      content: '♻';
+      color: var(--green-mid);
+    }
+
+    /* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+    @media(max-width: 1024px) {
+      section {
+        padding: 5rem 2rem;
+      }
+
+      nav {
+        padding: 1rem 2rem;
+      }
+
+      nav.scrolled {
+        padding: .75rem 2rem;
+      }
+
+      #intro,
+      #ai {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      .intro-visual {
+        height: 320px;
+      }
+
+      .levels-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .features-bento .feat-card {
+        grid-column: span 12 !important;
+      }
+
+      .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .about-values {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-stats {
+        gap: 2rem;
+      }
+    }
+
+    @media(max-width: 640px) {
+      nav .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .hero-title {
+        font-size: 2.8rem;
+      }
+
+      .hero-stats {
+        gap: 1.5rem;
+      }
+
+      .stat-num {
+        font-size: 2rem;
+      }
+
+      .team-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .about-values {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════
+     NAV
+════════════════════════════════════ -->
+  <nav id="navbar">
+    <div class="nav-logo">Sci<span>Math</span></div>
+    <div class="nav-links">
+      <a href="#intro">About</a>
+      <a href="#levels">Levels</a>
+      <a href="#features">Features</a>
+      <a href="#ai">AI Tutor</a>
+      <a href="#about">Team</a>
+      <a href="#" class="nav-cta">Get Started</a>
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════════
+     HERO
+════════════════════════════════════ -->
+  <section id="hero">
+    <div class="hero-mesh">
+      <div class="mesh-circle mc1"></div>
+      <div class="mesh-circle mc2"></div>
+      <div class="mesh-circle mc3"></div>
+    </div>
+    <div class="orb-field" id="orbField"></div>
+
+    <div class="hero-badge"><span class="badge-dot"></span>Now in Beta — Free for Students</div>
+
+    <h1 class="hero-title">
+      Where Curiosity<br>
+      <em class="line2">Meets Science.</em>
+    </h1>
+
+    <p class="hero-sub">
+      An adaptive learning platform for K–12 students. Explore science and mathematics through RPG quests, AI tutoring,
+      and stunning interactive animations.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#levels" class="btn-primary">Start Learning →</a>
+      <a href="#ai" class="btn-ghost">Meet the AI Tutor</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num" data-target="12">0</span>
+        <span class="stat-lab">Learning Levels</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="500">0</span>
+        <span class="stat-lab">Practice Problems</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="3">0</span>
+        <span class="stat-lab">School Levels</span>
+      </div>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+     INTRO
+════════════════════════════════════ -->
+  <section id="intro">
+    <div class="reveal left">
+      <div class="intro-visual">
+        <div class="intro-card-big">
+          <h3>Built for Every Learner</h3>
+          <p>From counting apples in an RPG world to deriving calculus proofs — SciMath grows with your curiosity.</p>
+        </div>
+        <div class="intro-card-sm">
+          <div class="stat-big">3</div>
+          <p>Adaptive learning tiers designed around how students actually think</p>
+        </div>
+        <div class="intro-tag-pill">🧠 AI-Powered</div>
+      </div>
+    </div>
+
+    <div class="reveal right">
+      <span class="section-tag">Our Mission</span>
+      <h2 class="section-title">Learning that feels like <em>play</em>, builds like <em>science.</em></h2>
+      <p class="section-sub"> SciMath Academy transforms STEM learning—turning memorization into interactive
+        problem-solving powered by AI.</p>
+      <div style="display:flex; gap:1rem; margin-top:2.5rem; flex-wrap:wrap;">
+        <a href="#levels" class="btn-primary"
+          style="background:var(--green);color:var(--cream);padding:.8rem 1.8rem;">Explore Levels →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+     LEVELS
+════════════════════════════════════ -->
+  <section id="levels">
+    <div class="reveal up" style="max-width:600px;">
+      <span class="section-tag">Learning Paths</span>
+      <h2 class="section-title">Three worlds.<br>One journey.</h2>
+      <p class="section-sub">Every level is designed with age-appropriate mechanics, deepening complexity and richer AI
+        interaction as students grow.</p>
+    </div>
+
+    <div class="levels-grid">
+      <!-- Elementary -->
+      <div class="level-card reveal up delay-1">
+        <div class="lc-number">01</div>
+        <div class="lc-icon" style="background:rgba(242,227,187,.15);">🗺️</div>
+        <span class="lc-grade">Grades K – 5</span>
+        <h3 class="lc-name">New World</h3>
+        <p class="lc-desc">Explore an RPG adventure map. Solve math riddles to unlock new territories. Mix chemicals in
+          a colour alchemy lab. Learn through wonder and play.</p>
+        <div class="lc-pills">
+          <span class="lc-pill">RPG Map</span>
+          <span class="lc-pill">Math Quests</span>
+          <span class="lc-pill">Science Lab</span>
+          <span class="lc-pill">XP & Rewards</span>
+        </div>
+      </div>
+      <!-- Middle -->
+      <div class="level-card reveal up delay-2">
+        <div class="lc-number">02</div>
+        <div class="lc-icon" style="background:rgba(242,227,187,.15);">🧠</div>
+        <span class="lc-grade">Grades 6 – 8</span>
+        <h3 class="lc-name">Explorer Mode</h3>
+        <p class="lc-desc">Tackle real-world problems with step-by-step AI hints. Visualise physics with live graphs.
+          Track your mistake patterns to learn faster.</p>
+        <div class="lc-pills">
+          <span class="lc-pill">AI Hints</span>
+          <span class="lc-pill">Live Graphs</span>
+          <span class="lc-pill">Mistake Tracker</span>
+          <span class="lc-pill">Motion Lab</span>
+        </div>
+      </div>
+      <!-- High School -->
+      <div class="level-card reveal up delay-3">
+        <div class="lc-number">03</div>
+        <div class="lc-icon" style="background:rgba(242,227,187,.15);">⚡</div>
+        <span class="lc-grade">Grades 9 – 12</span>
+        <h3 class="lc-name">AI Mentor</h3>
+        <p class="lc-desc">One-on-one sessions with a live AI tutor powered by Claude. Switch between theoretical
+          explanations and stunning physics animations on demand.</p>
+        <div class="lc-pills">
+          <span class="lc-pill">Live AI Chat</span>
+          <span class="lc-pill">Animations</span>
+          <span class="lc-pill">Derivations</span>
+          <span class="lc-pill">Theory Mode</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+     FEATURES
+════════════════════════════════════ -->
+  <section id="features">
+    <div class="features-header reveal up">
+      <span class="section-tag">Stunning Features</span>
+      <h2 class="section-title">Everything a student needs.<br><em>Nothing they don't.</em></h2>
+      <p class="section-sub">Thoughtfully built tools that make learning feel effortless and exciting.</p>
+    </div>
+
+    <div class="features-bento">
+      <div class="feat-card dark c1 reveal up delay-1">
+        <div class="feat-big-num">∫</div>
+        <div class="feat-icon"><span>🤖</span></div>
+        <div class="feat-title">Live AI Tutoring</div>
+        <div class="feat-desc">Powered by Claude — your AI mentor answers questions, explains derivations and adapts its
+          teaching style to how you learn best.</div>
+      </div>
+      <div class="feat-card cream-card c2 reveal up delay-2">
+        <div class="feat-big-num">π</div>
+        <div class="feat-icon cream-icon"><span>🎮</span></div>
+        <div class="feat-title">RPG Learning World</div>
+        <div class="feat-desc">Elementary students explore a tile-based adventure map where every quest unlocks new math
+          and science knowledge.</div>
+      </div>
+      <div class="feat-card mid c3 reveal up delay-3">
+        <div class="feat-big-num">∑</div>
+        <div class="feat-icon"><span>📈</span></div>
+        <div class="feat-title">Live Graphs</div>
+        <div class="feat-desc">Adjust sliders and watch equations come to life in real time.</div>
+      </div>
+
+      <div class="feat-card c4 reveal up delay-1">
+        <div class="feat-big-num">Δ</div>
+        <div class="feat-icon green-icon"><span>⚗️</span></div>
+        <div class="feat-title">Virtual Lab</div>
+        <div class="feat-desc">Mix chemicals, observe colour reactions and learn chemistry through hands-on digital
+          experiments.</div>
+      </div>
+      <div class="feat-card mid c5 reveal up delay-2">
+        <div class="feat-big-num">λ</div>
+        <div class="feat-icon"><span>🎬</span></div>
+        <div class="feat-title">Physics Animations</div>
+        <div class="feat-desc">Watch projectile motion, wave interference and circular dynamics rendered live in the
+          browser — no textbook can compete with seeing the maths in motion.</div>
+      </div>
+      <div class="feat-card dark c6 reveal up delay-3">
+        <div class="feat-big-num">⊕</div>
+        <div class="feat-icon"><span>🎯</span></div>
+        <div class="feat-title">Mistake Tracker</div>
+        <div class="feat-desc">The system logs your error patterns and surfaces the exact concepts you need to revisit —
+          turning failure into insight.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+     AI COMPANION
+════════════════════════════════════ -->
+  <section id="ai">
+    <!-- Chat Mockup -->
+    <div class="reveal scale">
+      <div class="chat-mockup">
+        <div class="chat-topbar">
+          <div class="ai-avatar">🤖</div>
+          <div>
+            <div class="chat-name">SciMath AI Mentor</div>
+            <div class="chat-status">High School · Projectile Motion</div>
+          </div>
+          <div class="chat-dot"></div>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div class="bubble ai" style="animation-delay:.1s">
+            Hello! I'm your AI Mentor. Today we're exploring <strong>Projectile Motion</strong>. What would you like to
+            understand — the core concept, key equations, or a worked example?
+            <span class="bubble-time">AI Mentor · just now</span>
+          </div>
+          <div class="bubble user" style="animation-delay:.4s">
+            Can you explain why the horizontal and vertical components are independent?
+            <span class="bubble-time">You · just now</span>
+          </div>
+          <div class="bubble ai" style="animation-delay:.7s">
+            Great question! In projectile motion, gravity acts <em>only vertically</em> — it has zero horizontal
+            component. So the horizontal velocity <code>vₓ = v₀cosθ</code> stays <strong>constant</strong> throughout
+            the flight.
+            <span class="bubble-time">AI Mentor · just now</span>
+          </div>
+          <div class="bubble ai" style="animation-delay:1s">
+            Meanwhile, the vertical velocity changes as <code>vᵧ = v₀sinθ − gt</code>. Because no force acts
+            horizontally, Newton's first law keeps <code>vₓ</code> unchanged. These two motions are completely
+            <strong>independent</strong> — that's the superposition principle! 🚀
+            <span class="bubble-time">AI Mentor · just now</span>
+          </div>
+          <div class="bubble user" style="animation-delay:1.3s">
+            Amazing! Can you show me the animation mode?
+            <span class="bubble-time">You · just now</span>
+          </div>
+          <div class="typing-bubble" style="animation-delay:1.6s">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div class="chat-input-bar">
+          <div class="fake-input">Ask anything about Physics, Math, Chemistry…</div>
+          <button class="send-btn">→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="reveal right">
+      <span class="section-tag">AI Companion</span>
+      <h2 class="section-title">Your personal tutor,<br><em>available 24/7.</em></h2>
+      <p class="section-sub">Powered by Claude, our AI Mentor doesn't just give answers — it teaches you to think.
+        Switch between theory, examples, and animations in a single conversation.</p>
+
+      <div class="ai-features">
+        <div class="ai-feat">
+          <div class="ai-feat-icon">💬</div>
+          <div>
+            <div class="ai-feat-title">Conversational Understanding</div>
+            <div class="ai-feat-desc">Ask follow-up questions naturally. The AI remembers context and builds on your
+              previous messages.</div>
+          </div>
+        </div>
+        <div class="ai-feat">
+          <div class="ai-feat-icon">🎬</div>
+          <div>
+            <div class="ai-feat-title">Theory + Animation Toggle</div>
+            <div class="ai-feat-desc">Switch between a written theoretical explanation and a live canvas animation for
+              the same concept — instantly.</div>
+          </div>
+        </div>
+        <div class="ai-feat">
+          <div class="ai-feat-icon">🎯</div>
+          <div>
+            <div class="ai-feat-title">Socratic Method</div>
+            <div class="ai-feat-desc">The AI guides you with hints and questions rather than just handing out answers,
+              building real understanding.</div>
+          </div>
+        </div>
+        <div class="ai-feat">
+          <div class="ai-feat-icon">📚</div>
+          <div>
+            <div class="ai-feat-title">6 Topic Domains</div>
+            <div class="ai-feat-desc">From Projectile Motion to Acid-Base Titration — each topic has a dedicated
+              knowledge mode with curated animations.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Quiz + AI Chat controls -->
+      <div class="reveal right"
+        style="background: rgba(255, 255, 255, .98); padding: 1.5rem; border-radius: 20px; margin-top: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,.08);">
+        <h3 class="section-title" style="font-size: 1.35rem; margin-bottom: .8rem;">Live AI Quiz</h3>
+        <p class="section-sub" style="margin-bottom:1rem;">Use this panel to create a user, fetch Gemini questions,
+          answer them, and use AI chat.</p>
+
+        <div style="display:grid; gap:.8rem; margin-bottom:1rem;">
+          <input id="nameInput" type="text" placeholder="Student name"
+            style="padding:.6rem; border:1px solid #ccc; border-radius:8px;" />
+          <select id="skillSelect" style="padding:.6rem; border:1px solid #ccc; border-radius:8px;">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <select id="goalSelect" style="padding:.6rem; border:1px solid #ccc; border-radius:8px;">
+            <option value="mastery">Mastery</option>
+            <option value="exam">Exam</option>
+            <option value="speed">Speed</option>
+          </select>
+          <input id="topicInput" type="text" placeholder="topic (e.g., algebra)"
+            style="padding:.6rem; border:1px solid #ccc; border-radius:8px;" />
+          <button id="createUserBtn"
+            style="padding:.75rem 1.2rem; background:var(--green); color:#fff; border:none; border-radius:10px; cursor:pointer;">Create
+            User</button>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <button id="loadQuestionBtn"
+            style="margin-right:.5rem; padding:.6rem 1rem; background:var(--green-mid); color:#fff; border:none; border-radius:10px; cursor:pointer;">Load
+            Question</button>
+          <span id="currentUserLabel" style="font-weight:700;">No user yet</span>
+        </div>
+
+        <div id="questionArea"
+          style="background:#f8fdf7; border:1px solid #e3f3da; border-radius:12px; padding:1rem; display:none; margin-bottom:1rem;">
+          <p id="questionText" style="font-weight:700;"></p>
+          <p id="questionMeta" style="font-size:.9rem;color:#4a6c3d;"></p>
+          <input id="answerInput" type="text" placeholder="Your answer"
+            style="width:100%; padding:.6rem; border:1px solid #ccc; border-radius:8px; margin-bottom:.5rem;" />
+          <button id="answerSubmitBtn"
+            style="padding:.6rem 1rem; background:var(--green); color:#fff; border:none; border-radius:10px; cursor:pointer;">Submit
+            Answer</button>
+          <p id="answerFeedback" style="margin-top:.5rem;"></p>
+        </div>
+
+        <h4 style="margin:0.8rem 0 0.4rem;">AI Chat Prompt</h4>
+        <textarea id="aiPrompt" placeholder="Ask the Gemini tutor..."
+          style="width:100%; padding:.6rem; height:80px; border:1px solid #ccc; border-radius:8px;"></textarea>
+        <button id="aiChatBtn"
+          style="margin-top:.4rem; padding:.6rem 1rem; background:var(--green-mid); color:#fff; border:none; border-radius:10px; cursor:pointer;">Send
+          Chat</button>
+        <p id="chatResponse" style="margin-top:.4rem; font-size:.9rem; color:#244d13;"></p>
+
+        <small><strong>Backend status:</strong> <span id="backendStatus">pending</span></small>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+     ABOUT US
+════════════════════════════════════ -->
+  <section id="about">
+    <div class="reveal up">
+      <span class="section-tag">About Us</span>
+      <h2 class="section-title">Built by students,<br><em>for students.</em></h2>
+      <p class="section-sub">A passionate hackathon team united by one belief — that every student deserves a learning
+        experience as engaging as the world itself.</p>
+    </div>
+
+    <div class="about-values reveal up delay-1">
+      <div class="val-card">
+        <span class="val-icon">🔬</span>
+        <div class="val-title">Evidence-Based</div>
+        <div class="val-desc">Every feature is rooted in learning science — spaced repetition, active recall, and
+          Socratic questioning.</div>
+      </div>
+      <div class="val-card">
+        <span class="val-icon">🌱</span>
+        <div class="val-title">Adaptive Growth</div>
+        <div class="val-desc">The platform adapts to each student's pace, reinforcing weak areas and accelerating
+          mastery.</div>
+      </div>
+      <div class="val-card">
+        <span class="val-icon">♿</span>
+        <div class="val-title">Accessible by Design</div>
+        <div class="val-desc">Built to be inclusive — clear typography, high contrast, and intuitive flows that work for
+          all learners.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════
+     FOOTER
+════════════════════════════════════ -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">Sci<span>Math</span> Academy</div>
+        <p>Adaptive K–12 STEM learning with interactive AI, games, and labs.</p>
+        <div class="footer-social">
+          <a href="#" class="soc-btn">𝕏</a>
+          <a href="#" class="soc-btn">in</a>
+          <a href="#" class="soc-btn">gh</a>
+          <a href="#" class="soc-btn">ig</a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="#levels">Quest World</a>
+        <a href="#features">Features</a>
+        <a href="#ai">AI Tutor</a>
+        <a href="#about">About</a>
+        <a href="#" class="nav-cta">Get Started</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 SciMath Academy. All rights reserved.</p>
+      <div class="footer-badge">Made sustainably for students worldwide</div>
+    </div>
+  </footer>
+
+  <!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
+  <script>
+    /* ── NAV SCROLL ── */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    /* ── MOBILE MENU ── */
+    function toggleMenu() {
+      const links = document.querySelector('.nav-links');
+      links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+      links.style.flexDirection = 'column';
+      links.style.position = 'fixed';
+      links.style.top = '0'; links.style.left = '0'; links.style.right = '0';
+      links.style.background = 'rgba(0,95,2,.98)';
+      links.style.padding = '5rem 2rem 2rem';
+      links.style.zIndex = '800';
+      links.style.gap = '1.5rem';
+    }
+
+    /* ── FLOATING ORBS ── */
+    const SYMBOLS = ['∫', '∑', 'π', '∞', '√', 'Δ', 'θ', 'λ', '∂', 'φ', 'α', 'β', '×', '²', '≈', '∇', '∈', '∏'];
+    const orbField = document.getElementById('orbField');
+    for (let i = 0; i < 20; i++) {
+      const o = document.createElement('div');
+      o.className = 'orb';
+      o.textContent = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      o.style.left = Math.random() * 100 + '%';
+      o.style.fontSize = (1.5 + Math.random() * 3.5) + 'rem';
+      o.style.animationDuration = (18 + Math.random() * 20) + 's';
+      o.style.animationDelay = (Math.random() * 25) + 's';
+      orbField.appendChild(o);
+    }
+
+    /* ── COUNTER ANIMATION ── */
+    function animateCounter(el, target, suffix = '') {
+      const duration = 1800;
+      const start = performance.now();
+      const step = (now) => {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(eased * target) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+    let countersStarted = false;
+
+    /* ── SCROLL REVEAL ── */
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+
+      // trigger counters when hero is in view
+      if (!countersStarted) {
+        const hero = document.getElementById('hero');
+        const rect = hero.getBoundingClientRect();
+        if (rect.top <= window.innerHeight) {
+          countersStarted = true;
+          document.querySelectorAll('[data-target]').forEach(el => {
+            const t = parseInt(el.dataset.target);
+            const suffix = el.dataset.target >= 98 ? '+' : t >= 500 ? '+' : '';
+            setTimeout(() => animateCounter(el, t, suffix), 1200);
+          });
+        }
+      }
+    }, { threshold: 0.12 });
+
+    revealEls.forEach(el => io.observe(el));
+
+    // kick off counters on load too
+    window.addEventListener('load', () => {
+      if (!countersStarted) {
+        countersStarted = true;
+        document.querySelectorAll('[data-target]').forEach(el => {
+          const t = parseInt(el.dataset.target);
+          const suffix = t >= 98 ? '+' : t >= 500 ? '+' : '';
+          setTimeout(() => animateCounter(el, t, suffix), 1400);
+        });
+      }
+    });
+
+    /* ── SMOOTH TYPING IN CHAT ── */
+    // auto-scroll chat to show typing bubble
+    setTimeout(() => {
+      const chatBody = document.getElementById('chatBody');
+      if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+    }, 2000);
+
+    /* ── DYNAMIC QUIZ + AI CHAT INTEGRATION ── */
+    const API_BASE = 'http://127.0.0.1:8000';
+    let sessionUserId = null;
+    let currentExercise = null;
+
+    const currentUserLabel = document.getElementById('currentUserLabel');
+    const backendStatus = document.getElementById('backendStatus');
+    const questionArea = document.getElementById('questionArea');
+    const questionText = document.getElementById('questionText');
+    const questionMeta = document.getElementById('questionMeta');
+    const answerInput = document.getElementById('answerInput');
+    const answerFeedback = document.getElementById('answerFeedback');
+    const chatResponse = document.getElementById('chatResponse');
+
+    async function setBackendStatus() {
+      try {
+        const r = await fetch(`${API_BASE}/health`);
+        const j = await r.json();
+        backendStatus.textContent = j.status || 'unknown';
+      } catch (e) {
+        backendStatus.textContent = 'offline (start backend)';
+      }
+    }
+
+    async function createUser() {
+      const name = document.getElementById('nameInput').value.trim() || 'Student';
+      const skill_level = document.getElementById('skillSelect').value;
+      const goal = document.getElementById('goalSelect').value;
+      const initial_topic = document.getElementById('topicInput').value.trim() || 'algebra';
+
+      try {
+        const response = await fetch(`${API_BASE}/user/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, skill_level, goal, initial_topic })
+        });
+
+        if (!response.ok) throw new Error(`Failed to create user: ${response.status}`);
+        const data = await response.json();
+
+        sessionUserId = data.user_id;
+        currentUserLabel.textContent = `User: ${data.name} (${data.user_id.slice(0, 8)})`;
+        answerFeedback.textContent = 'User created. Now request a question.';
+      } catch (err) {
+        answerFeedback.textContent = `Error creating user - ${err.message}`;
+      }
+    }
+
+    async function loadQuestion() {
+      if (!sessionUserId) {
+        answerFeedback.textContent = 'Create a user first.';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/get_question`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: sessionUserId })
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch question: ${response.status}`);
+        const data = await response.json();
+
+        currentExercise = data;
+        questionArea.style.display = 'block';
+        questionText.textContent = data.question;
+        questionMeta.textContent = `Topic: ${data.topic} | Difficulty: ${data.difficulty}`;
+        answerInput.value = '';
+        answerFeedback.textContent = '';
+      } catch (err) {
+        answerFeedback.textContent = `Error loading question - ${err.message}`;
+      }
+    }
+
+    async function submitAnswer() {
+      if (!currentExercise || !sessionUserId) {
+        answerFeedback.textContent = 'Load a question first.';
+        return;
+      }
+
+      const user_answer = answerInput.value.trim();
+      if (!user_answer) {
+        answerFeedback.textContent = 'Please type an answer.';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/submit_answer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: sessionUserId,
+            exercise_id: currentExercise.exercise_id,
+            user_answer,
+            response_time: 12.0,
+            hints_used: 0
+          })
+        });
+
+        if (!response.ok) throw new Error(`Submit failed: ${response.status}`);
+        const data = await response.json();
+
+        answerFeedback.textContent = `${data.feedback}\nExplanation: ${data.explanation}`;
+        if (data.is_correct) {
+          answerFeedback.style.color = '#0b5d09';
+        } else {
+          answerFeedback.style.color = '#b00020';
+        }
+      } catch (err) {
+        answerFeedback.textContent = `Error submitting answer - ${err.message}`;
+      }
+    }
+
+    async function aiChat() {
+      const prompt = document.getElementById('aiPrompt').value.trim();
+      if (!prompt) {
+        chatResponse.textContent = 'Enter a prompt for AI chat.';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/ai/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: sessionUserId, prompt, max_tokens: 220 })
+        });
+
+        if (!response.ok) throw new Error(`AI chat failed: ${response.status}`);
+        const data = await response.json();
+
+        chatResponse.textContent = data.response;
+      } catch (err) {
+        chatResponse.textContent = `AI chat error: ${err.message}`;
+      }
+    }
+
+    document.getElementById('createUserBtn').addEventListener('click', createUser);
+    document.getElementById('loadQuestionBtn').addEventListener('click', loadQuestion);
+    document.getElementById('answerSubmitBtn').addEventListener('click', submitAnswer);
+    document.getElementById('aiChatBtn').addEventListener('click', aiChat);
+
+    setBackendStatus();
+  </script>
+</body>
+
+</html>
