@@ -312,9 +312,18 @@ async def submit_answer(request: SubmitAnswerRequest):
         user_answer=request.user_answer,
         is_correct=is_correct,
         response_time=request.response_time,
-        hints_used=request.hints_used
+        hints_used=request.hints_used,
+        conceptual_match=request.conceptual_match,
+        understanding=request.understanding
     )
-    result=gemini_client.evaluate_reasoning(exercise,exercise.answer,request.user_reasoning,exercise.topic)
+
+    result=gemini_client.evaluate_reasoning(exercise.question,exercise.answer,request.user_reasoning,exercise.topic)
+    if result is None:
+        result = {
+            "concept_match": False,
+            "understanding": "weak"
+        }
+
     # Save answer
     db.save_answer(user_answer)
     
@@ -362,13 +371,14 @@ async def submit_answer(request: SubmitAnswerRequest):
     # Generate feedback
     if is_correct:
         feedback = f"✅ Correct! Great job on this {exercise.difficulty.value} question!"
-        if result["understanding"]=="strong": feedback+="Your reasoning is solid"
-        else: feedback+="Your reasoning is weak"
+        if result["understanding"] == "strong":
+            feedback += " Your reasoning is solid."
+        else:
+            feedback += " Your reasoning is weak."
         if question_score.score < 0.5:
             feedback += " (But you used hints - try without hints next time for full points)"
     else:
         feedback = f"❌ Incorrect. The correct answer is: {exercise.answer}"
-    
     # Save updated user
     db.update_user(user)
     
