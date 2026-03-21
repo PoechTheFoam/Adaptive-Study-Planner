@@ -2,8 +2,12 @@
 Configuration file for the Adaptive Learning Platform Backend
 """
 import os
+from dotenv import load_dotenv
 
-GEMINI_API_KEY = "AIzaSyDzG6cd1oiMMajUo00f_sgrCuTtnIt2QzU"
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
 # ============================================================================
 # IMPORTANT: API KEY CONFIGURATION
 # ============================================================================

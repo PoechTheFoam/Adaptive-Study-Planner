@@ -19,6 +19,14 @@ if GEMINI_API_KEY:
 
 
 class GeminiIntegration:
+    def set_api_key(self, api_key: str) -> bool:
+        try:
+            self.api_key = api_key
+            genai.configure(api_key=api_key)
+            return True
+        except Exception as e:
+            print(f"Error setting Gemini API key: {e}")
+            return False
     """Integration with Google's Gemini API for content generation"""
     
     def __init__(self):
@@ -367,10 +375,10 @@ Provide a clear explanation of the concept and solution."""
         Return
         ONLY
         JSON:
-        \\{
+        {{
             "concept_match": boolean,
             "understanding": "strong" | "weak"
-        \\}
+        }}
         """
         model = genai.GenerativeModel(self.model_name)
         response= model.generate_content(prompt)

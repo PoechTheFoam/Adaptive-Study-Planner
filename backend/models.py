@@ -100,8 +100,8 @@ class UserAnswer:
     user_answer: str
     is_correct: bool
     response_time: float  # seconds
-    conceptual_match: bool
-    understanding: str
+    conceptual_match: bool = False
+    understanding: str = "weak"
     hints_used: int = 0
     timestamp: datetime = field(default_factory=datetime.now)
     

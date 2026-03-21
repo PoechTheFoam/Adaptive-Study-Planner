@@ -30,7 +30,6 @@ from config import TOPICS, DIFFICULTY_LEVELS, SKILL_LEVELS, GOALS
 # ============================================================================
 # IMPORTANT REMINDER: Add your GEMINI_API_KEY to config.py!
 # ============================================================================
-
 # FastAPI app setup
 app = FastAPI(
     title="Adaptive Learning Platform Backend",
@@ -46,7 +45,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+class ConfigureApiKeyRequest(BaseModel):
+    api_key: str
 
+@app.post("/configure_api_key")
+async def configure_api_key(request: ConfigureApiKeyRequest):
+    success = gemini_client.set_api_key(request.api_key)
+    if not success:
+        raise HTTPException(status_code=400, detail="Invalid API key")
+    return {"status": "ok"}
 # ============================================================================
 # Pydantic Models for Request/Response
 # ============================================================================
@@ -306,6 +313,13 @@ async def submit_answer(request: SubmitAnswerRequest):
     # Check if answer is correct (case-insensitive for simple comparison)
     is_correct = request.user_answer.strip().lower() == exercise.answer.strip().lower()
     # Create user answer record
+    result = gemini_client.evaluate_reasoning(exercise.question, exercise.answer, request.user_answer,
+                                              request.user_reasoning, exercise.topic)
+    if result is None:
+        result = {
+            "concept_match": False,
+            "understanding": "weak"
+        }
     user_answer = UserAnswer(
         user_id=request.user_id,
         exercise_id=request.exercise_id,
@@ -313,16 +327,10 @@ async def submit_answer(request: SubmitAnswerRequest):
         is_correct=is_correct,
         response_time=request.response_time,
         hints_used=request.hints_used,
-        conceptual_match=request.conceptual_match,
-        understanding=request.understanding
+        conceptual_match=result["concept_match"],
+        understanding=result["understanding"]
     )
 
-    result=gemini_client.evaluate_reasoning(exercise.question,exercise.answer,request.user_reasoning,exercise.topic)
-    if result is None:
-        result = {
-            "concept_match": False,
-            "understanding": "weak"
-        }
 
     # Save answer
     db.save_answer(user_answer)
