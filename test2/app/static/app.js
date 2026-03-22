@@ -394,12 +394,14 @@ async function moveToNextQuestion() {
     });
     state.profileSnapshot = result.profileSnapshot;
     state.session.result = result.evaluation;
+    state.session.studyPlan = result.studyPlan;
     renderResults();
 }
 
 function renderResults() {
     const evaluation = state.session.result;
     const activeTopic = getPreferredTopic();
+    const studyPlan = state.session.studyPlan;
     const reviews = evaluation.questionReviews
         .map((review) => `
             <article class="detail-card ${review.isCorrect ? "correct" : "missed"}">
@@ -530,7 +532,41 @@ function renderHistory(sessions) {
             </div>
         `)
         .join("");
-}
+    function renderStudyPlan(studyPlan) {
+        if (!studyPlan) {
+            return '<p class="muted-copy">No study plan generated for this session.</p>'; 
+        }
+
+        const prioritySkills = (studyPlan.prioritySkills || []).map((skill) => `<li>${escapeHtml(skill)}</li>`).join("");
+        const steps = (studyPlan.steps || [])
+            .map((step)) => 
+                <article class="detail-card">
+                    <div class="detail-head">
+                        <strong>${escapeHtml(step.title)}</strong>
+                    </div>
+                    <p class="small-copy
+                </article>
+            ')
+            .join("");
+            
+        return `\
+            <section class="panel">
+                <h3>${escapeHtml(studyPlan.headline)}</h3>
+            <p class="small-copy">${escapeHtml(studyPlan.summary)}</p>
+            <p class="small-copy"><strong>Time:</strong> ${studyPlan.timeMinutes} minutes</p>
+            <div class="detail-meta">${prioritySkills}</div>
+            <div class="session-detail">${steps}</div>
+            <div class="result-callout">
+                <strong>Practice prompt</strong>
+                <p class="small-copy">${escapeHtml(studyPlan.practicePrompt)}</p>
+            </div>
+            <div class="result-callout">
+                <strong>Encouragement</strong>
+                <p class="small-copy">${escapeHtml(studyPlan.encouragement)}</p>
+            </div>
+        </section>
+                }    
+
 
 function getCurrentQuestion() {
     return state.session?.questions?.[state.currentQuestionIndex] || null;

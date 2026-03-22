@@ -202,6 +202,12 @@ class Application:
             snapshot = self.storage.get_profile_snapshot(session["profile_id"])
             if snapshot is None:
                 raise KeyError("Profile not found")
+            study_plan = self.content_engine.build_study_plan(
+                learner_name=snapshot["profile"]["name"],
+                topic=session["topic"],
+                education_level=session["education_level"],
+                evaluation=result,
+            )
 
             return self._json_response(
                 start_response,
@@ -209,6 +215,7 @@ class Application:
                 {
                     "sessionId": session_id,
                     "evaluation": result,
+                    "studyPlan": study_plan,
                     "profileSnapshot": snapshot,
                 },
             )

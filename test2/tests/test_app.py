@@ -85,6 +85,13 @@ class AppSmokeTest(unittest.TestCase):
         self.assertIn("evaluation", result)
         self.assertGreaterEqual(result["evaluation"]["masteryPercent"], 80)
         self.assertIn("profileSnapshot", result)
+        self.assertIn("evaluation", result["profileSnapshot"])
+        self.assertGreaterEqual(result["profileSnapshot"]["evaluation"]["masteryPercent"], 80)
+        self.assertIn("studyPlan", result)
+        self.assertIn("health", result["studyPlan"])
+        self.assertIn("steps", result["studyPlan"])
+        self.assertTrue(result["studyPlan"]["steps"])
+        
 
     def call_json(self, method: str, path: str, payload: dict | None = None) -> dict:
         body = json.dumps(payload).encode("utf-8") if payload is not None else b""
